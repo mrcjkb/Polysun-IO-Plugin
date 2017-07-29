@@ -1,6 +1,6 @@
 
 
-# Polysun-4diac-ControllerPlugin
+# Polysun CSV Writer Plugin
 Open source Polysun plugin with a set of plugin controllers that can be used for communication in co-simulations with IEC 61499 applications running on 4diac-RTE (FORTE).
 
 
