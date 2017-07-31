@@ -63,7 +63,7 @@ public class CSVWriterController extends AbstractPluginController {
 	@Override
 	public int[] control(int simulationTime, boolean status, float[] sensors, float[] controlSignals, float[] logValues,
 			boolean preRun, Map<String, Object> parameters) throws PluginControllerException {
-		if (simulationTime >= 0 && status) {
+		if (!preRun && status) {
 			try {
 				getBuffer().write(Integer.toString(simulationTime));
 				writeDelimiter();
