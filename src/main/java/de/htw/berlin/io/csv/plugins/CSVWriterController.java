@@ -23,7 +23,7 @@ public class CSVWriterController extends AbstractPluginController {
 	/** Path to the default plugin controller image. */
 	public static final String DEF_IMGPATH = "plugin/images/controller_plugin.png";
 	/** Path to the plugin controller image. */
-	public static final String IMGPATH = "controller_csv.png";
+	public static final String IMGPATH = "plugin/images/controller_csv.png";
 	private static final int MAX_NUM_GENERIC_SENSORS = 30;
 	private static final int INCLUDE_HEADERS = 0;
 
