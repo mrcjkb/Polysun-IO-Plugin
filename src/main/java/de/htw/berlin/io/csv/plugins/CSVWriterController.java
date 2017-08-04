@@ -29,6 +29,7 @@ public class CSVWriterController extends AbstractPluginController {
 
 	private BufferedWriter mBuffer = null;
 	private Writer mWriter = null;
+	private File mFile = null;
 
 	public CSVWriterController() {
 		super();
@@ -64,6 +65,47 @@ public class CSVWriterController extends AbstractPluginController {
 	public int[] control(int simulationTime, boolean status, float[] sensors, float[] controlSignals, float[] logValues,
 			boolean preRun, Map<String, Object> parameters) throws PluginControllerException {
 		if (!preRun && status) {
+			if (mFile == null) {
+				mFile = new File(getProp(PATH_KEY).getString());
+				if (mFile.exists()) {
+					mFile.delete();
+				}
+				if (!mFile.exists()) {
+					try {
+						mFile.createNewFile();
+					} catch (IOException e) {
+						throw new PluginControllerException(getName() + ": Error creating file.", e);
+					}
+				}
+				try {
+					try {
+						mWriter = new FileWriter(mFile);
+						mBuffer = new BufferedWriter(mWriter);
+					} catch (IOException e) {
+						throw new PluginControllerException(getName() + ": Error opening file.", e);
+					}
+					if (getProp(INCLUDE_HEADERS_KEY).getInt() == INCLUDE_HEADERS) {
+						try {
+							getBuffer().write("Simulation time [s]");
+							writeDelimiter();
+							List<Sensor> pluginsensors = getSensors();
+							for (Sensor s : pluginsensors) {
+								if (!s.isUsed()) {
+									break;
+								}
+								getBuffer().write(s.getName() + "[" + s.getUnit() + "]");
+								writeDelimiter();
+							}
+							getBuffer().newLine();
+						} catch (IOException e) {
+							throw new PluginControllerException(getName() + ": Error writing headers to file.", e);
+						}
+					}
+				} catch (PluginControllerException e) {
+					flushAndClose(); // Close file before throwing exception
+					throw e;
+				}
+			}
 			try {
 				getBuffer().write(Integer.toString(simulationTime));
 				writeDelimiter();
@@ -81,49 +123,6 @@ public class CSVWriterController extends AbstractPluginController {
 			}
 		}
 		return null;
-	}
-
-	@Override
-	public void initialiseSimulation(Map<String, Object> parameters) throws PluginControllerException {
-		File file = new File(getProp(PATH_KEY).getString());
-		if (file.exists()) {
-			file.delete();
-		}
-		if (!file.exists()) {
-			try {
-				file.createNewFile();
-			} catch (IOException e) {
-				throw new PluginControllerException(getName() + ": Error creating file.", e);
-			}
-		}
-		try {
-			try {
-				mWriter = new FileWriter(file);
-				mBuffer = new BufferedWriter(mWriter);
-			} catch (IOException e) {
-				throw new PluginControllerException(getName() + ": Error opening file.", e);
-			}
-			if (getProp(INCLUDE_HEADERS_KEY).getInt() == INCLUDE_HEADERS) {
-				try {
-					getBuffer().write("Simulation time [s]");
-					writeDelimiter();
-					List<Sensor> sensors = getSensors();
-					for (Sensor s : sensors) {
-						if (!s.isUsed()) {
-							break;
-						}
-						getBuffer().write(s.getName() + "[" + s.getUnit() + "]");
-						writeDelimiter();
-					}
-					getBuffer().newLine();
-				} catch (IOException e) {
-					throw new PluginControllerException(getName() + ": Error writing headers to file.", e);
-				}
-			}
-		} catch (PluginControllerException e) {
-			flushAndClose(); // Close file before throwing exception
-			throw e;
-		}
 	}
 
 	@Override
