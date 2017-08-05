@@ -12,12 +12,13 @@ import com.velasolaris.plugin.controller.spi.IPluginController;
  * @author Marc Jakobi</p>HTW Berlin</p>July 2017
  *
  */
-public class CSVWriterPlugin extends AbstractControllerPlugin {
+public class IOPlugin extends AbstractControllerPlugin {
 
 	@Override
 	public List<Class<? extends IPluginController>> getControllers(Map<String, Object> parameters) {
 		List<Class<? extends IPluginController>> controllers = new ArrayList<>();
 		controllers.add(CSVWriterController.class);
+		controllers.add(MatWriterController.class);
 		return controllers;
 	}
 
@@ -33,6 +34,6 @@ public class CSVWriterPlugin extends AbstractControllerPlugin {
 	
 	@Override
 	public String getVersion() {
-		return "1.0";
+		return "1.0.1";
 	}
 }

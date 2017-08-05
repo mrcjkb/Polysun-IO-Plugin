@@ -55,7 +55,7 @@ public class CSVWriterController extends AbstractPluginController {
 			throws PluginControllerException {
 		List<Property> properties = new ArrayList<>();
 		String path = System.getProperty("user.home") + "\\Desktop\\output.csv";
-		properties.add(new Property(PATH_KEY, path, "The host name (e.g., the IP address) of the function block this plugin connects to."));
+		properties.add(new Property(PATH_KEY, path, "The full path to the CSV file (including file extension)."));
 		properties.add(new Property(DELIMITER_KEY, ";", "The delimiter used for separating values."));
 		properties.add(new Property(INCLUDE_HEADERS_KEY, new String[] { "yes", "no" }, INCLUDE_HEADERS, "Include the CSV headers in the file"));
 		return new PluginControllerConfiguration(properties, null, null, null, 0, MAX_NUM_GENERIC_SENSORS, 0, getPluginIconResource(), null);
