@@ -12,7 +12,7 @@ import com.velasolaris.plugin.controller.spi.IPluginController;
  * @author Marc Jakobi</p>HTW Berlin</p>July 2017
  *
  */
-public class IOPlugin extends AbstractControllerPlugin {
+public class IOControllerPlugin extends AbstractControllerPlugin {
 
 	@Override
 	public List<Class<? extends IPluginController>> getControllers(Map<String, Object> parameters) {
