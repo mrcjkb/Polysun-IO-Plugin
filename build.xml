@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<project name="CSVWriter" default="build" basedir=".">
+<project name="IOPlugin" default="build" basedir=".">
 	<description>
-		Builds the open source CSV Writer Polysun plugin.
+		Builds the open source Polysun IO plugin.
 	</description>
 
 	<property name="applicationName" value="Polysun" />
