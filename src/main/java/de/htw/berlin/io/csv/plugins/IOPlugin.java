@@ -29,11 +29,11 @@ public class IOPlugin extends AbstractControllerPlugin {
 
 	@Override
 	public String getDescription() {
-		return "A Plugin for writing sensor values to a CSV file.";
+		return "A Plugin for file input/output.";
 	}
 	
 	@Override
 	public String getVersion() {
-		return "1.0.1";
+		return "1.1.0";
 	}
 }

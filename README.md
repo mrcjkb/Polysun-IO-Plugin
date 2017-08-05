@@ -18,3 +18,10 @@ You will find the file in: C:\Program Files (x86)\Polysun\pictures or C:\Program
 Rename it to Icons.zip (make sure to show file extensions in Windows Explorer) and add the image "controller_csv.png" to the archive.
 You can find the image in: ..\src\main\resources\plugin\images\
 Then rename the archive to Icons.jar and copy it back to its original location.
+
+
+# For developers:
+The following libraries are required for development:
+
+	- PolysunPluginDevelopmentKit (ships with Polysun)
+	- JMatIO (for the MatWriterController) https://github.com/gradusnikov/jmatio
