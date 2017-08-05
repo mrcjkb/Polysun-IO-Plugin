@@ -42,7 +42,7 @@ public class CSVWriterController extends AbstractPluginController {
 
 	@Override
 	public String getVersion() {
-		return "1.0";
+		return "1.0.1";
 	}
 	
 	@Override
