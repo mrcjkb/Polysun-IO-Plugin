@@ -9,7 +9,12 @@ Requirements for use:
 
   - Polysun (http://www.velasolaris.com/)
 
-To load the plugin into Polysun, copy the file CSVWriterPlugin.jar from ..\target\dist\ into Polysun's plugins folder (usually C:\Users\..\Polysun\plugins\) and launch Polysun.
+To load the plugin into Polysun, copy the file IOPlugin.jar from ..\target\dist\ into Polysun's plugins folder (usually C:\Users\..\Polysun\plugins\) and launch Polysun.
+
+It contains the following plugin controllers:
+
+	- CSV Writer: Writes the sensor inputs into a delimited CSV file.
+	- MAT Writer: Writes the sensor inputs as a matrix in a Matlab MAT file.
 
 
 NOTE: There is currently a bug in Polysun preventing the correct plugin icon from being loaded. This is not a severe issue, as the default plugin icon is loaded instead.

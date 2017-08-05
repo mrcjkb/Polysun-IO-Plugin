@@ -14,6 +14,7 @@ import com.jmatio.types.MLDouble;
 import com.velasolaris.plugin.controller.spi.AbstractPluginController;
 import com.velasolaris.plugin.controller.spi.PluginControllerConfiguration;
 import com.velasolaris.plugin.controller.spi.PluginControllerException;
+import com.velasolaris.plugin.controller.spi.PolysunSettings;
 import com.velasolaris.plugin.controller.spi.PluginControllerConfiguration.Property;
 import com.velasolaris.plugin.controller.spi.PluginControllerConfiguration.Sensor;
 
@@ -29,13 +30,16 @@ public class MatWriterController extends AbstractPluginController {
 	private static final int HOURS_PER_YEAR = 8760;
 	private static final int SECONDS_PER_HOUR = 3600;
 	private static final int MINUTES_PER_HOUR = 60;
+	/** Number of columns to add to 2D array if it is too small to add new sensors */
 	private static final int COLS_TO_ADD = 100000;
-
+	
+	/** The fixed time step in s */
+	private int mFixedTimeStep;
 	/** The buffer for the sensor data */
 	private double[][] mPolysunSensorData;
 	/** The number of rows to initialize with */
 	private int mNumRows;
-	/** The number of columns to intialize with */
+	/** The number of columns to initialize with */
 	private int mNumCols;
 	/** The current column being written to */
 	private int mCurrCol;
@@ -61,6 +65,12 @@ public class MatWriterController extends AbstractPluginController {
 				+ " Hint: If a fixed time step size is used, set it with this controller to minimise memory issues.";
 	}
 
+	@Override
+	public void build(PolysunSettings polysunSettings, Map<String, Object> parameters) throws PluginControllerException {
+		super.build(polysunSettings, parameters);
+		mFixedTimeStep = getProperty(FIXED_TIMESTEP_KEY).getInt();
+	}
+	
 	@Override
 	public PluginControllerConfiguration getConfiguration(Map<String, Object> parameters)
 			throws PluginControllerException {
@@ -127,6 +137,11 @@ public class MatWriterController extends AbstractPluginController {
 			JOptionPane.showMessageDialog(null, "Saving the MAT file failed.", "Error", JOptionPane.ERROR_MESSAGE);
 			e.printStackTrace();
 		}
+	}
+	
+	@Override
+	public int getFixedTimestep(Map<String, Object> parameters) {
+		return mFixedTimeStep;
 	}
 	
 	/**
