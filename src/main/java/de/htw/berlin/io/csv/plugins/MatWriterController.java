@@ -50,7 +50,9 @@ public class MatWriterController extends AbstractWriterController {
 	public String getDescription() {
 		return "Writes the sensor inputs to a matrix in a Matlab MAT file (starting at the beginning of the simulation)."
 				+ " The MAT file is written at the end of the simulation. "
-				+ " Hint: If a fixed time step size is used, set it with this controller to minimise memory issues.";
+				+ " Hint: If a fixed time step size is used, set it with this controller to minimise memory issues."
+				+ " Warning: Unlike the CSV Writer, this controller does not flush the buffered data until the simulation is terminated."
+				+ " This may cause out of memory errors for low fixed time step sizes and large amounts of inputs.";
 	}
 
 	@Override
@@ -80,7 +82,9 @@ public class MatWriterController extends AbstractWriterController {
 			}
 			mNumRows++;
 		}
-		mNumRows++; // Add additional column for time stamp
+		if (getProp(TIMESTAMPSETTING_KEY).getInt() == ENABLE_TIMESTAMP) {
+			mNumRows++; // Add additional column for time stamp
+		}
 		mPolysunSensorData = new double[mNumRows][mNumCols];
 		mCurrCol = -1;
 	}
@@ -94,7 +98,9 @@ public class MatWriterController extends AbstractWriterController {
 				mPolysunSensorData = increaseCols(mPolysunSensorData, mNumCols);
 			}
 			int ct = 0;
-			mPolysunSensorData[ct++][mCurrCol] = simulationTime;
+			if (getProp(TIMESTAMPSETTING_KEY).getInt() == ENABLE_TIMESTAMP) {
+				mPolysunSensorData[ct++][mCurrCol] = simulationTime;
+			}
 			for (float s : sensors) {
 				if (Float.isNaN(s)) {
 					break;
@@ -104,9 +110,9 @@ public class MatWriterController extends AbstractWriterController {
 		}
 		return null;
 	}
-
+	
 	@Override
-	public void terminateSimulation(Map<String, Object> parameters) {
+	protected void flushAndClose() {
 		if (++mCurrCol < mNumCols) {
 			// Reduce the buffer size
 			mPolysunSensorData = reduceCols(mPolysunSensorData, mCurrCol);
@@ -118,6 +124,9 @@ public class MatWriterController extends AbstractWriterController {
 		} catch (IOException e) {
 			JOptionPane.showMessageDialog(null, "Saving the MAT file failed.", "Error", JOptionPane.ERROR_MESSAGE);
 			e.printStackTrace();
+		} finally {
+			// Clean up
+			mPolysunSensorData = null;
 		}
 	}
 	
