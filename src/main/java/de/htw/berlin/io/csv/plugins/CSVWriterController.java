@@ -5,23 +5,18 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import com.velasolaris.plugin.controller.spi.AbstractPluginController;
 import com.velasolaris.plugin.controller.spi.PluginControllerConfiguration;
 import com.velasolaris.plugin.controller.spi.PluginControllerException;
 import com.velasolaris.plugin.controller.spi.PluginControllerConfiguration.Property;
 import com.velasolaris.plugin.controller.spi.PluginControllerConfiguration.Sensor;
 
-public class CSVWriterController extends AbstractPluginController {
+public class CSVWriterController extends AbstractWriterController {
 
-	private static final String PATH_KEY = "File path and name";
 	private static final String DELIMITER_KEY = "Delimiter";
 	private static final String INCLUDE_HEADERS_KEY = "Include headers";
-	/** Path to the default plugin controller image. */
-	public static final String DEF_IMGPATH = "plugin/images/controller_plugin.png";
 	/** Path to the plugin controller image. */
 	public static final String IMGPATH = "plugin/images/controller_csv.png";
 	private static final int MAX_NUM_GENERIC_SENSORS = 30;
@@ -39,11 +34,6 @@ public class CSVWriterController extends AbstractPluginController {
 	public String getName() {
 		return "CSV Writer";
 	}
-
-	@Override
-	public String getVersion() {
-		return "1.1.1";
-	}
 	
 	@Override
 	public String getDescription() {
@@ -53,7 +43,7 @@ public class CSVWriterController extends AbstractPluginController {
 	@Override
 	public PluginControllerConfiguration getConfiguration(Map<String, Object> parameters)
 			throws PluginControllerException {
-		List<Property> properties = new ArrayList<>();
+		List<Property> properties = initializePropertyList();
 		String path = System.getProperty("user.home") + "\\Desktop\\output.csv";
 		properties.add(new Property(PATH_KEY, path, "The full path to the CSV file (including file extension)."));
 		properties.add(new Property(DELIMITER_KEY, ";", "The delimiter used for separating values."));
@@ -67,7 +57,7 @@ public class CSVWriterController extends AbstractPluginController {
 		if (preRun && mFile != null) {
 			flushAndClose();
 		}
-		if (!preRun && status) {
+		if (!preRun && status && isWriteTimestep(simulationTime)) {
 			if (simulationTime == 0 || mFile == null) {
 				mFile = new File(getProp(PATH_KEY).getString());
 				if (mFile.exists()) {
