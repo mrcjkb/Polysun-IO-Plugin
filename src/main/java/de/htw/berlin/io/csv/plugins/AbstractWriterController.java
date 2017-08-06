@@ -39,7 +39,7 @@ public abstract class AbstractWriterController extends AbstractPluginController 
 
 	@Override
 	public String getVersion() {
-		return "1.2.0";
+		return "1.3.0";
 	}
 	
 	@Override
