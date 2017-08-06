@@ -64,11 +64,19 @@ public class CSVWriterController extends AbstractPluginController {
 	@Override
 	public int[] control(int simulationTime, boolean status, float[] sensors, float[] controlSignals, float[] logValues,
 			boolean preRun, Map<String, Object> parameters) throws PluginControllerException {
+		if (preRun && mFile != null) {
+			flushAndClose();
+		}
 		if (!preRun && status) {
-			if (mFile == null) {
+			if (simulationTime == 0 || mFile == null) {
 				mFile = new File(getProp(PATH_KEY).getString());
 				if (mFile.exists()) {
-					mFile.delete();
+					if (!mFile.delete()) {
+						flushAndClose();
+						if (!mFile.delete()) {
+							throw new PluginControllerException(getName() + "Failed to delete old CSV file.");
+						}
+					}
 				}
 				if (!mFile.exists()) {
 					try {
@@ -80,7 +88,7 @@ public class CSVWriterController extends AbstractPluginController {
 				try {
 					try {
 						mWriter = new FileWriter(mFile);
-						mBuffer = new BufferedWriter(mWriter);
+						mBuffer = new BufferedWriter(getWriter());
 					} catch (IOException e) {
 						throw new PluginControllerException(getName() + ": Error opening file.", e);
 					}
@@ -146,6 +154,7 @@ public class CSVWriterController extends AbstractPluginController {
 			getBuffer().flush();
 			getBuffer().close();
 			getWriter().close();
+			mFile = null;
 		} catch (IOException e) {
 			// Ignore. File was probably already closed.
 		}
