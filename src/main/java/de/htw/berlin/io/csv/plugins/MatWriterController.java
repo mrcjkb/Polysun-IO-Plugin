@@ -113,19 +113,25 @@ public class MatWriterController extends AbstractWriterController {
 	
 	@Override
 	protected void flushAndClose() {
-		if (++mCurrCol < mNumCols) {
-			// Reduce the buffer size
-			mPolysunSensorData = reduceCols(mPolysunSensorData, mCurrCol);
-		}
-		Collection<MLArray> mlSensorData = new ArrayList<MLArray>();
-		mlSensorData.add(new MLDouble("sensors", mPolysunSensorData));
 		try {
-			new MatFileWriter(getProp(PATH_KEY).getString(), mlSensorData);
-		} catch (IOException e) {
-			JOptionPane.showMessageDialog(null, "Saving the MAT file failed.", "Error", JOptionPane.ERROR_MESSAGE);
-			e.printStackTrace();
+			if (++mCurrCol < mNumCols) {
+				// Reduce the buffer size
+				mPolysunSensorData = reduceCols(mPolysunSensorData, mCurrCol);
+			}
+			Collection<MLArray> mlSensorData = new ArrayList<MLArray>();
+			mlSensorData.add(new MLDouble("sensors", mPolysunSensorData));
+			try {
+				new MatFileWriter(getProp(PATH_KEY).getString(), mlSensorData);
+			} catch (IOException e) {
+				JOptionPane.showMessageDialog(null, "Saving the MAT file failed.", "Error", JOptionPane.ERROR_MESSAGE);
+				e.printStackTrace();
+			} finally {
+				// Clean up
+				mPolysunSensorData = null;
+			}
+		} catch (Throwable e) {
+			JOptionPane.showMessageDialog(null, "Failed to save MAT file: " + e.getClass().getCanonicalName(), "Error", JOptionPane.ERROR_MESSAGE);
 		} finally {
-			// Clean up
 			mPolysunSensorData = null;
 		}
 	}
