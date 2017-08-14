@@ -84,8 +84,10 @@ public class CSVWriterController extends AbstractWriterController {
 					}
 					if (getProp(INCLUDE_HEADERS_KEY).getInt() == INCLUDE_HEADERS) {
 						try {
-							getBuffer().write("Simulation time [s]");
-							writeDelimiter();
+							if (getProp(TIMESTAMPSETTING_KEY).getInt() == ENABLE_TIMESTAMP) {
+								getBuffer().write("Simulation time [s]");
+								writeDelimiter();
+							}
 							List<Sensor> pluginsensors = getSensors();
 							for (Sensor s : pluginsensors) {
 								if (!s.isUsed()) {
@@ -105,8 +107,10 @@ public class CSVWriterController extends AbstractWriterController {
 				}
 			}
 			try {
-				getBuffer().write(Integer.toString(simulationTime));
-				writeDelimiter();
+				if (getProp(TIMESTAMPSETTING_KEY).getInt() == ENABLE_TIMESTAMP) {
+					getBuffer().write(Integer.toString(simulationTime));
+					writeDelimiter();
+				}
 				for (float s : sensors) {
 					if (Float.isNaN(s)) {
 						break;
@@ -123,11 +127,6 @@ public class CSVWriterController extends AbstractWriterController {
 		return null;
 	}
 
-	@Override
-	public void terminateSimulation(Map<String, Object> parameters) {
-		flushAndClose();
-	}
-	
 	/**
 	 * Writes a delimiter to the CSV.
 	 * @throws IOException
@@ -136,10 +135,8 @@ public class CSVWriterController extends AbstractWriterController {
 		mBuffer.write(getProp(DELIMITER_KEY).getString());
 	}
 
-	/**
-	 * Flushes the buffer and closes the file.
-	 */
-	private void flushAndClose() {
+	@Override
+	protected void flushAndClose() {
 		try {
 			getBuffer().flush();
 			getBuffer().close();

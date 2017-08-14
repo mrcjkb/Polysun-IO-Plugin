@@ -34,6 +34,6 @@ public class IOControllerPlugin extends AbstractControllerPlugin {
 	
 	@Override
 	public String getVersion() {
-		return "1.1.1";
+		return "1.3.0";
 	}
 }
