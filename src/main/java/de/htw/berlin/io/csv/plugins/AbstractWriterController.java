@@ -4,10 +4,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang.SystemUtils;
+
 import com.velasolaris.plugin.controller.spi.AbstractPluginController;
 import com.velasolaris.plugin.controller.spi.PluginControllerException;
 import com.velasolaris.plugin.controller.spi.PolysunSettings;
 import com.velasolaris.plugin.controller.spi.PluginControllerConfiguration.Property;
+import com.velasolaris.plugin.controller.spi.PluginControllerConfiguration.Sensor;
 
 public abstract class AbstractWriterController extends AbstractPluginController {
 
@@ -19,6 +22,8 @@ public abstract class AbstractWriterController extends AbstractPluginController 
 	private static final String ONLY_FIXED_WRITE_KEY = "Write data only at fixed time steps";
 	/** Key for the timestamp option. */
 	protected static final String TIMESTAMPSETTING_KEY = "Include simulation time stamp";
+	/** Key for option to increment file names */
+	private static final String INCREMENT_FILENAME_KEY = "Append number to file name that increments with each simulation";
 	/** Path to the default plugin controller image. */
 	public static final String DEF_IMGPATH = "plugin/images/controller_plugin.png";
 	/** Maximum number of generic sensors that can be connected. */
@@ -27,11 +32,19 @@ public abstract class AbstractWriterController extends AbstractPluginController 
 	private static final int ONLY_FIXED_WRITE = 0;
 	/** Index for enabled sending of time stamp. */
 	protected static final int ENABLE_TIMESTAMP = 1;
+	/** Index for incrementing file name set to disabled */
+	protected static final int DONT_INCREMENT_FILENAME = 0;
 	
 	/** The fixed time step in s */
 	private int mFixedTimeStep;
 	/** Only write data for fixed time steps? */
 	private boolean mOnlyFixedWrite;
+	/** Increments with each successful simulation */
+	private transient int mSimulationCount;
+	/** Running sums used in case of writing only fixed time steps */
+	protected transient float[] mRunningSums;
+	/** simulationTime from the last call of control() */
+	private transient int mLastSimulationTime;
 	
 	public AbstractWriterController() {
 		super();
@@ -45,6 +58,7 @@ public abstract class AbstractWriterController extends AbstractPluginController 
 	@Override
 	public void initialiseSimulation(Map<String, Object> parameters) throws PluginControllerException {
 		super.initialiseSimulation(parameters);
+		mRunningSums = new float[getNumUsedSensors()];
 		if (getProp(FIXED_TIMESTEP_KEY).getInt() == 0) {
 			mOnlyFixedWrite = false;
 		} else {
@@ -74,6 +88,7 @@ public abstract class AbstractWriterController extends AbstractPluginController 
 	
 	@Override
 	public void terminateSimulation(Map<String, Object> parameters) {
+		incrementSimulationCount();
 		flushAndClose();
 	}
 	
@@ -85,6 +100,7 @@ public abstract class AbstractWriterController extends AbstractPluginController 
 		properties.add(new Property(FIXED_TIMESTEP_KEY, 0, 0, 900, "The fixed time step in s"));
 		properties.add(new Property(ONLY_FIXED_WRITE_KEY, new String[] { "yes", "no" }, ONLY_FIXED_WRITE, "This is automatically set to no if no fixed time step is set."));
 		properties.add(new Property(TIMESTAMPSETTING_KEY, new String[] { "no" , "yes" }, ENABLE_TIMESTAMP, "Include the simulation time."));
+		properties.add(new Property(INCREMENT_FILENAME_KEY, new String[] {"no", "yes"}, DONT_INCREMENT_FILENAME, "Use this option to prevent files from being overwritten when simulating multiple variants."));
 		return properties;
 	}
 	
@@ -108,4 +124,65 @@ public abstract class AbstractWriterController extends AbstractPluginController 
 	 * This method should be called whenever the simulation is terminated (whether expected or unexpected).
 	 */
 	protected abstract void flushAndClose();
+
+	/**
+	 * @return number of simulations that have been run
+	 */
+	protected int getSimulationCount() {
+		return mSimulationCount;
+	}
+
+	/**
+	 * Increments the internal simulation counter
+	 */
+	private void incrementSimulationCount() {
+		this.mSimulationCount += 1;
+	}
+	
+	/**
+	 * @return Name of file to be saved (including path)
+	 */
+	protected String getFileName() {
+		String name = getProp(PATH_KEY).getString();
+		if (getProp(INCREMENT_FILENAME_KEY).getInt() != DONT_INCREMENT_FILENAME) {
+			// Add simulation count between name and extension
+			int lastDot = name.lastIndexOf('.');
+			name = name.substring(0, lastDot) + "_" + String.format("%03d", getSimulationCount()) + name.substring(lastDot);
+		}
+		return name;
+	}
+	
+	/**
+	 * @return Default file path and name (without extension), depending on the OS
+	 */
+	protected String getDefaultFilePathAndName() {
+		String pathAndName = System.getProperty("user.home");
+		if (SystemUtils.IS_OS_WINDOWS) {
+			return pathAndName + "\\Desktop\\output";
+		} 
+		// Linux
+		return pathAndName + "/output";
+	}
+	
+	/**
+	 * @return The number of utilized sensors
+	 */
+	private int getNumUsedSensors() {
+		int num = 0;
+		List<Sensor> sensors = getSensors();
+		for (Sensor s : sensors) {
+			if (s.isUsed()) {
+				num++;
+			}
+		}
+		return num;
+	}
+
+	protected int getLastSimulationTime() {
+		return mLastSimulationTime;
+	}
+
+	protected void setLastSimulationTime(int mLastSimulationTime) {
+		this.mLastSimulationTime = mLastSimulationTime;
+	}
 }

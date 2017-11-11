@@ -44,8 +44,8 @@ public class CSVWriterController extends AbstractWriterController {
 	public PluginControllerConfiguration getConfiguration(Map<String, Object> parameters)
 			throws PluginControllerException {
 		List<Property> properties = initializePropertyList();
-		String path = System.getProperty("user.home") + "\\Desktop\\output.csv";
-		properties.add(new Property(PATH_KEY, path, "The full path to the CSV file (including file extension)."));
+		String fileNameWithExtension = getDefaultFilePathAndName() + ".csv";
+		properties.add(new Property(PATH_KEY, fileNameWithExtension, "The full path to the CSV file (including file extension)."));
 		properties.add(new Property(DELIMITER_KEY, ";", "The delimiter used for separating values."));
 		properties.add(new Property(INCLUDE_HEADERS_KEY, new String[] { "yes", "no" }, INCLUDE_HEADERS, "Include the CSV headers in the file"));
 		return new PluginControllerConfiguration(properties, null, null, null, 0, MAX_NUM_GENERIC_SENSORS, 0, getPluginIconResource(), null);
@@ -59,7 +59,7 @@ public class CSVWriterController extends AbstractWriterController {
 		}
 		if (!preRun && status && isWriteTimestep(simulationTime)) {
 			if (simulationTime == 0 || mFile == null) {
-				mFile = new File(getProp(PATH_KEY).getString());
+				mFile = new File(getFileName());
 				if (mFile.exists()) {
 					if (!mFile.delete()) {
 						flushAndClose();
@@ -118,12 +118,31 @@ public class CSVWriterController extends AbstractWriterController {
 					getBuffer().write(Float.toString(s));
 					writeDelimiter();
 				}
+				int ct = 0;
+				for (float s : sensors) {
+					if (Float.isNaN(s)) {
+						break;
+					}
+					mRunningSums[ct] += s * (simulationTime - getLastSimulationTime()) / getFixedTimestep(null);
+					getBuffer().write(Float.toString(mRunningSums[ct]));
+					mRunningSums[ct++] = 0; // Reset running sum
+					writeDelimiter();
+				}
 				getBuffer().newLine();
 			} catch (IOException e) {
 				flushAndClose();
 				throw new PluginControllerException(getName() + ": Error writing data to file.", e);
 			}
+		} else if (!preRun && status ) {
+			int ct = 0;
+			for (float s : sensors) {
+				if (Float.isNaN(s)) {
+					break;
+				}
+				mRunningSums[ct++] += s * (simulationTime - getLastSimulationTime()) / getFixedTimestep(null);
+			}
 		}
+		setLastSimulationTime(simulationTime);
 		return null;
 	}
 

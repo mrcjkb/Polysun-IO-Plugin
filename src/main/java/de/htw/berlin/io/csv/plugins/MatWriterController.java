@@ -59,8 +59,8 @@ public class MatWriterController extends AbstractWriterController {
 	public PluginControllerConfiguration getConfiguration(Map<String, Object> parameters)
 			throws PluginControllerException {
 		List<Property> properties = initializePropertyList();
-		String path = System.getProperty("user.home") + "\\Desktop\\output.mat";
-		properties.add(new Property(PATH_KEY, path, "The path to the MAT file (including file extension)"));
+		String fileNameWithExtension = getDefaultFilePathAndName() + ".mat";
+		properties.add(new Property(PATH_KEY, fileNameWithExtension, "The path to the MAT file (including file extension)"));
 		return new PluginControllerConfiguration(properties, null, null, null, 0, MAX_NUM_GENERIC_SENSORS, 0, getPluginIconResource(), null);
 	}
 
@@ -105,9 +105,21 @@ public class MatWriterController extends AbstractWriterController {
 				if (Float.isNaN(s)) {
 					break;
 				}
-				mPolysunSensorData[ct++][mCurrCol] = s;
+				mRunningSums[ct] += s * (simulationTime - getLastSimulationTime()) / getFixedTimestep(null);
+				mPolysunSensorData[ct][mCurrCol] = mRunningSums[ct];
+				mRunningSums[ct++] = 0; // Reset running sum
 			}
+		} else if (!preRun && status) {
+			int ct = 0;
+			for (float s : sensors) {
+				if (Float.isNaN(s)) {
+					break;
+				}
+				mRunningSums[ct++] += s * (simulationTime - getLastSimulationTime()) / getFixedTimestep(null);
+			}
+			
 		}
+		setLastSimulationTime(simulationTime);
 		return null;
 	}
 	
@@ -121,7 +133,7 @@ public class MatWriterController extends AbstractWriterController {
 			Collection<MLArray> mlSensorData = new ArrayList<MLArray>();
 			mlSensorData.add(new MLDouble("sensors", mPolysunSensorData));
 			try {
-				new MatFileWriter(getProp(PATH_KEY).getString(), mlSensorData);
+				new MatFileWriter(getFileName(), mlSensorData);
 			} catch (IOException e) {
 				JOptionPane.showMessageDialog(null, "Saving the MAT file failed.", "Error", JOptionPane.ERROR_MESSAGE);
 				e.printStackTrace();
