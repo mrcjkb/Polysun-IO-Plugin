@@ -98,9 +98,6 @@ public class MatWriterController extends AbstractWriterController {
 				mPolysunSensorData = increaseCols(mPolysunSensorData, mNumCols);
 			}
 			int ct = 0;
-			if (getProp(TIMESTAMPSETTING_KEY).getInt() == ENABLE_TIMESTAMP) {
-				mPolysunSensorData[ct++][mCurrCol] = simulationTime;
-			}
 			for (float s : sensors) {
 				if (Float.isNaN(s)) {
 					break;
@@ -110,6 +107,9 @@ public class MatWriterController extends AbstractWriterController {
 				mRunningSums[ct] += s * weight;
 				mPolysunSensorData[ct][mCurrCol] = mRunningSums[ct];
 				mRunningSums[ct++] = 0; // Reset running sum
+			}
+			if (getProp(TIMESTAMPSETTING_KEY).getInt() == ENABLE_TIMESTAMP) {
+				mPolysunSensorData[ct++][mCurrCol] = simulationTime;
 			}
 		} else if (!preRun && status) {
 			int ct = 0;

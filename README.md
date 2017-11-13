@@ -16,6 +16,9 @@ It contains the following plugin controllers:
 	- CSV Writer: Writes the sensor inputs into a delimited CSV file.
 	- MAT Writer: Writes the sensor inputs as a matrix in a Matlab MAT file.
 
+Both plugins have the option to write the simulation time (in s since the beginning of the year) as a time stamp. In the case of the MAT Writer, the simulation time is written to the last row.
+For increased performance, the MAT writer writes the inputs to a matrix as row vectors. If a time stamp is written, it would be accessed via sensors(end,:);
+To extract input no. x from the matrix, use the following indexing: sensors(x,:)
 
 NOTE: There is currently a bug in Polysun preventing the correct plugin icon from being loaded. This is not a severe issue, as the default plugin icon is loaded instead.
 If you would like to load the CSVWriter plugin icon, copy the file Icons.jar from Polysuns' pictures path to the desktop (make a backup of the file first).
