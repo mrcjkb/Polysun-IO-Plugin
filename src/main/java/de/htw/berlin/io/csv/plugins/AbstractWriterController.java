@@ -109,7 +109,7 @@ public abstract class AbstractWriterController extends AbstractPluginController 
 	 * @return <code>true</code> if the controller should write data
 	 */
 	protected boolean isWriteTimestep(int simulationTime) {
-		return onlyWriteAtFixedTimesteps() ? simulationTime % getFixedTimestep(null) == 0 : false;
+		return onlyWriteAtFixedTimesteps() ? simulationTime % getFixedTimestep(null) == 0 : true;
 	}
 	
 	/**
