@@ -9,9 +9,9 @@ import java.util.List;
 import java.util.Map;
 
 import com.velasolaris.plugin.controller.spi.PluginControllerConfiguration;
-import com.velasolaris.plugin.controller.spi.PluginControllerException;
 import com.velasolaris.plugin.controller.spi.PluginControllerConfiguration.Property;
 import com.velasolaris.plugin.controller.spi.PluginControllerConfiguration.Sensor;
+import com.velasolaris.plugin.controller.spi.PluginControllerException;
 
 public class CSVWriterController extends AbstractWriterController {
 
@@ -111,13 +111,6 @@ public class CSVWriterController extends AbstractWriterController {
 					getBuffer().write(Integer.toString(simulationTime));
 					writeDelimiter();
 				}
-				for (float s : sensors) {
-					if (Float.isNaN(s)) {
-						break;
-					}
-					getBuffer().write(Float.toString(s));
-					writeDelimiter();
-				}
 				int ct = 0;
 				for (float s : sensors) {
 					if (Float.isNaN(s)) {
@@ -171,7 +164,7 @@ public class CSVWriterController extends AbstractWriterController {
 	/**
 	 * Attempts to load the custom 4diac plugin icon.
 	 * @return A <code>String</code> representing the relative path to the icon. If loading the custom 4diac plugin icon fails, a <code>String</code>
-	 * representing the relative path to the default plugin controller icon is returned. 
+	 * representing the relative path to the default plugin controller icon is returned.
 	 */
 	public static String getPluginIconResource() {
 		if (ClassLoader.getSystemResource(IMGPATH) == null) {
