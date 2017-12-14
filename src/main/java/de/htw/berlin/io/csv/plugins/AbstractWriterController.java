@@ -7,10 +7,10 @@ import java.util.Map;
 import org.apache.commons.lang.SystemUtils;
 
 import com.velasolaris.plugin.controller.spi.AbstractPluginController;
-import com.velasolaris.plugin.controller.spi.PluginControllerException;
-import com.velasolaris.plugin.controller.spi.PolysunSettings;
 import com.velasolaris.plugin.controller.spi.PluginControllerConfiguration.Property;
 import com.velasolaris.plugin.controller.spi.PluginControllerConfiguration.Sensor;
+import com.velasolaris.plugin.controller.spi.PluginControllerException;
+import com.velasolaris.plugin.controller.spi.PolysunSettings;
 
 public abstract class AbstractWriterController extends AbstractPluginController {
 
@@ -52,7 +52,7 @@ public abstract class AbstractWriterController extends AbstractPluginController 
 
 	@Override
 	public String getVersion() {
-		return "1.5.0";
+		return "2.0.1";
 	}
 	
 	@Override
@@ -159,7 +159,7 @@ public abstract class AbstractWriterController extends AbstractPluginController 
 		String pathAndName = System.getProperty("user.home");
 		if (SystemUtils.IS_OS_WINDOWS) {
 			return pathAndName + "\\Desktop\\output";
-		} 
+		}
 		// Linux
 		return pathAndName + "/output";
 	}
