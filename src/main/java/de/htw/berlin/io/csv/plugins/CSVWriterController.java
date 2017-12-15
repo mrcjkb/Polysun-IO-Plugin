@@ -57,6 +57,8 @@ public class CSVWriterController extends AbstractWriterController {
 		if (preRun && mFile != null) {
 			flushAndClose();
 		}
+		// Weigh against time step size if averaging over fixed time step size
+		double weight = computeTimestepWeight(simulationTime);
 		if (!preRun && status && isWriteTimestep(simulationTime)) {
 			if (simulationTime == 0 || mFile == null) {
 				mFile = new File(getFileName());
@@ -116,12 +118,10 @@ public class CSVWriterController extends AbstractWriterController {
 					if (Float.isNaN(s)) {
 						break;
 					}
-					// Weigh against time step size if averaging over fixed time step size
-					double weight = onlyWriteAtFixedTimesteps() ? (simulationTime - getLastSimulationTime()) / getFixedTimestep(null) : 1;
 					mRunningSums[ct] += s * weight;
 					getBuffer().write(Float.toString(mRunningSums[ct]));
-					mRunningSums[ct++] = 0; // Reset running sum
 					writeDelimiter();
+					mRunningSums[ct++] = 0; // Reset running sum
 				}
 				getBuffer().newLine();
 			} catch (IOException e) {
@@ -129,13 +129,7 @@ public class CSVWriterController extends AbstractWriterController {
 				throw new PluginControllerException(getName() + ": Error writing data to file.", e);
 			}
 		} else if (!preRun && status ) {
-			int ct = 0;
-			for (float s : sensors) {
-				if (Float.isNaN(s)) {
-					break;
-				}
-				mRunningSums[ct++] += s * (simulationTime - getLastSimulationTime()) / getFixedTimestep(null);
-			}
+			incrementRunningSums(sensors, weight);
 		}
 		setLastSimulationTime(simulationTime);
 		return null;

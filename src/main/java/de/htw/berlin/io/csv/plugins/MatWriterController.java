@@ -12,9 +12,9 @@ import com.jmatio.io.MatFileWriter;
 import com.jmatio.types.MLArray;
 import com.jmatio.types.MLDouble;
 import com.velasolaris.plugin.controller.spi.PluginControllerConfiguration;
-import com.velasolaris.plugin.controller.spi.PluginControllerException;
 import com.velasolaris.plugin.controller.spi.PluginControllerConfiguration.Property;
 import com.velasolaris.plugin.controller.spi.PluginControllerConfiguration.Sensor;
+import com.velasolaris.plugin.controller.spi.PluginControllerException;
 
 public class MatWriterController extends AbstractWriterController {
 
@@ -92,6 +92,7 @@ public class MatWriterController extends AbstractWriterController {
 	@Override
 	public int[] control(int simulationTime, boolean status, float[] sensors, float[] controlSignals, float[] logValues,
 			boolean preRun, Map<String, Object> parameters) throws PluginControllerException {
+		double weight = computeTimestepWeight(simulationTime);
 		if (!preRun && status && isWriteTimestep(simulationTime)) {
 			if (++mCurrCol >= mNumCols) { // Increase the buffer size
 				mNumCols += COLS_TO_ADD;
@@ -102,8 +103,6 @@ public class MatWriterController extends AbstractWriterController {
 				if (Float.isNaN(s)) {
 					break;
 				}
-				// Weigh against time step size if averaging over fixed time step size
-				double weight = onlyWriteAtFixedTimesteps() ? (simulationTime - getLastSimulationTime()) / getFixedTimestep(null) : 1;
 				mRunningSums[ct] += s * weight;
 				mPolysunSensorData[ct][mCurrCol] = mRunningSums[ct];
 				mRunningSums[ct++] = 0; // Reset running sum
@@ -112,14 +111,7 @@ public class MatWriterController extends AbstractWriterController {
 				mPolysunSensorData[ct++][mCurrCol] = simulationTime;
 			}
 		} else if (!preRun && status) {
-			int ct = 0;
-			for (float s : sensors) {
-				if (Float.isNaN(s)) {
-					break;
-				}
-				mRunningSums[ct++] += s * (simulationTime - getLastSimulationTime()) / getFixedTimestep(null);
-			}
-			
+			incrementRunningSums(sensors, weight);
 		}
 		setLastSimulationTime(simulationTime);
 		return null;
@@ -153,7 +145,7 @@ public class MatWriterController extends AbstractWriterController {
 	/**
 	 * Attempts to load the custom 4diac plugin icon.
 	 * @return A <code>String</code> representing the relative path to the icon. If loading the custom 4diac plugin icon fails, a <code>String</code>
-	 * representing the relative path to the default plugin controller icon is returned. 
+	 * representing the relative path to the default plugin controller icon is returned.
 	 */
 	public static String getPluginIconResource() {
 		if (ClassLoader.getSystemResource(IMGPATH) == null) {

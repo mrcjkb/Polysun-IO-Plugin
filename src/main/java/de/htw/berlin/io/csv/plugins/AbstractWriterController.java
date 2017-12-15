@@ -185,4 +185,27 @@ public abstract class AbstractWriterController extends AbstractPluginController 
 	protected void setLastSimulationTime(int mLastSimulationTime) {
 		this.mLastSimulationTime = mLastSimulationTime;
 	}
+	
+	/**
+	 * @param simulationTime simulation time in s
+	 * @return the weight for data to be saved depending on the time step size
+	 */
+	protected double computeTimestepWeight(int simulationTime) {
+		return onlyWriteAtFixedTimesteps() ? (double) (simulationTime - getLastSimulationTime()) / getFixedTimestep(null) : 1;
+	}
+	
+	/**
+	 * Increments the array of running sums
+	 * @param sensors sensor data from the {@link #control(int, boolean, float[], float[], float[], boolean, Map)} method.
+	 * @param weight value returned by {@link #computeTimestepWeight(int)}
+	 */
+	protected void incrementRunningSums(float[] sensors, double weight) {
+		int ct = 0;
+		for (float s : sensors) {
+			if (Float.isNaN(s)) {
+				break;
+			}
+			mRunningSums[ct++] += s * weight;
+		}
+	}
 }
