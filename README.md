@@ -1,6 +1,11 @@
 
 
 # Polysun CSV Writer Plugin
+
+> [![Maintenance](https://img.shields.io/badge/Maintained%3F-no-red.svg)](https://bitbucket.org/lbesson/ansi-colors)
+>
+> I will gladly accept/review PRs.
+
 Open source Polysun plugin with a set of plugin controllers that can be used for communication in co-simulations with IEC 61499 applications running on 4diac-RTE (FORTE).
 
 
